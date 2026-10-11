@@ -1,456 +1,210 @@
-\# GitFlow Backend
+# 🚀 GitFlow Backend
 
+**OAuth backend untuk [GitFlow](https://github.com/MuhammadReki/GitFlow)** — aplikasi GitHub client mobile berbasis Flutter.
 
+Backend ini menangani proses autentikasi OAuth GitHub dan Google menggunakan **Node.js** dan **Vercel Serverless Functions**.
 
-!\[Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)
+<div align="center">
 
-!\[Node.js](https://img.shields.io/badge/Node.js-Serverless-green?logo=node.js)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?style=for-the-badge&logo=vercel)](https://gitflow-backend-xi.vercel.app)
+[![Node.js](https://img.shields.io/badge/Node.js-Serverless-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![OAuth](https://img.shields.io/badge/OAuth-GitHub%20%2B%20Google-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://oauth.net)
 
-!\[OAuth](https://img.shields.io/badge/OAuth-GitHub%20%2B%20Google-blue)
+</div>
 
+---
 
+## 📌 Tentang Proyek
 
-> OAuth backend untuk \*\*GitFlow\*\* — GitHub client mobile yang dibangun dengan Flutter.
+GitFlow Backend adalah backend serverless yang berfungsi sebagai perantara antara aplikasi mobile GitFlow dan layanan OAuth GitHub serta Google.
 
+Backend ini menangani pertukaran authorization code menjadi access token dan proses callback autentikasi yang diperlukan oleh aplikasi mobile.
 
+### Mengapa menggunakan backend?
 
-\---
+**Client Secret tidak boleh disimpan langsung di aplikasi mobile.** Jika secret disertakan dalam aplikasi, nilainya berpotensi diekstrak oleh pihak lain.
 
+Dengan menggunakan backend, kredensial OAuth disimpan sebagai environment variables di Vercel sehingga tidak perlu ditanamkan langsung ke dalam kode aplikasi mobile.
 
+## ✨ Fitur Utama
 
-\## 📖 Tentang Project
+- 🔐 Autentikasi OAuth GitHub.
+- 🔑 Integrasi Google OAuth 2.0.
+- 🔄 Pertukaran authorization code menjadi access token.
+- 📱 Redirect hasil autentikasi Google ke deep link aplikasi GitFlow.
+- ☁️ Deployment menggunakan Vercel Serverless Functions.
+- 🛡️ Penyimpanan kredensial OAuth melalui environment variables.
 
+---
 
+## 🔌 API Endpoints
 
-`gitflow-backend` adalah \*\*serverless backend\*\* yang menangani proses OAuth untuk aplikasi mobile \*\*GitFlow\*\*. Backend ini berjalan di \*\*Vercel\*\* dan berfungsi sebagai perantara antara aplikasi mobile dengan GitHub dan Google OAuth API.
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| `POST` | `/api/auth/github` | Menukar GitHub authorization code menjadi access token. |
+| `GET` | `/api/auth/google/callback` | Menangani callback Google OAuth dan mengarahkan pengguna kembali ke aplikasi. |
 
+### Alur Autentikasi
 
-
-\### Kenapa butuh backend?
-
-
-
-OAuth flow memerlukan \*\*Client Secret\*\* yang \*\*tidak boleh\*\* disimpan di aplikasi mobile (rawan dibaca orang). Backend ini menyimpan secret dengan aman di environment variables Vercel, lalu melakukan exchange `code` → `access\_token` di server.
-
-
-
-\### Alur OAuth
-
-
-
+```text
+┌─────────────────┐
+│  GitFlow Mobile │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ GitHub / Google │
+│   OAuth Login   │
+└────────┬────────┘
+         │ Authorization Code
+         ▼
+┌─────────────────┐
+│ GitFlow Backend │
+│     Vercel      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ OAuth Token API │
+└────────┬────────┘
+         │
+         ▼
+   Access Token /
+   Auth Redirect
 ```
 
-\[Mobile App] → \[GitHub/Google OAuth] → \[Backend Vercel] → \[OAuth API]
+*Catatan: Alur detail pengiriman token dan redirect bergantung pada implementasi masing-masing endpoint.*
 
-&#x20;    ↑                                                              │
+---
 
-&#x20;    └────────────────────── access\_token ──────────────────────────┘
+## 🛠️ Tech Stack
 
-```
+- **Runtime:** Node.js
+- **Backend Platform:** Vercel Serverless Functions
+- **Authentication:** GitHub OAuth
+- **Identity Provider:** Google OAuth 2.0
+- **Mobile Application:** Flutter
 
+---
 
+## 📁 Struktur Proyek
 
-\---
-
-
-
-\## 🛠️ Tech Stack
-
-
-
-| Komponen | Tech |
-
-|----------|------|
-
-| Runtime | Node.js (Vercel Serverless Functions) |
-
-| Hosting | \[Vercel](https://vercel.com) |
-
-| OAuth Provider | GitHub API, Google OAuth 2.0 |
-
-| HTTP Client | Native `fetch` / `https` |
-
-| Config | Environment Variables |
-
-
-
-\---
-
-
-
-\## 📁 Struktur Project
-
-
-
-```
-
+```text
 gitflow-backend/
-
 ├── api/
-
 │   └── auth/
-
-│       ├── github.js              # POST /api/auth/github
-
+│       ├── github.js
 │       └── google/
-
-│           └── callback.js        # GET /api/auth/google/callback
-
-├── .gitignore
-
-├── LICENSE
-
+│           └── callback.js
+├── package.json
 └── README.md
-
 ```
 
+Keterangan:
 
+- `api/auth/github.js` — endpoint `POST /api/auth/github`.
+- `api/auth/google/callback.js` — endpoint `GET /api/auth/google/callback`.
 
-\---
+*Struktur di atas mengikuti struktur endpoint yang digunakan dalam proyek.*
 
+---
 
+## ⚙️ Konfigurasi Environment Variables
 
-\## 🔌 API Endpoints
+Tambahkan environment variables berikut melalui **Vercel Dashboard → Project Settings → Environment Variables**.
 
+| Variable | Keterangan |
+|---|---|
+| `GITHUB_CLIENT_ID` | Client ID aplikasi OAuth GitHub. |
+| `GITHUB_CLIENT_SECRET` | Client Secret aplikasi OAuth GitHub. |
+| `GOOGLE_CLIENT_ID` | Client ID aplikasi Google OAuth. |
+| `GOOGLE_CLIENT_SECRET` | Client Secret aplikasi Google OAuth. |
 
+### Catatan Keamanan
 
-\### 1. GitHub OAuth — Exchange Code
+- Jangan commit file `.env` yang berisi kredensial ke repository.
+- Jangan menyimpan Client Secret di aplikasi mobile.
+- Pastikan redirect URI pada konfigurasi GitHub dan Google OAuth sesuai dengan endpoint backend.
+- Validasi authorization code dan tangani error autentikasi dengan benar.
+- Hindari meneruskan access token melalui URL yang dapat tersimpan di log atau riwayat browser.
 
+---
 
+## 🚀 Deployment
 
-\*\*Endpoint:\*\* `POST /api/auth/github`
+### Opsi 1: Menggunakan Vercel CLI
 
+Pastikan Git, Node.js, dan Vercel CLI sudah tersedia di lingkungan pengembangan.
 
-
-\*\*Request Body:\*\*
-
-```json
-
-{
-
-&#x20; "code": "github\_oauth\_code\_from\_mobile"
-
-}
-
-```
-
-
-
-\*\*Response:\*\*
-
-```json
-
-{
-
-&#x20; "access\_token": "gho\_xxxxxxxxxxxx",
-
-&#x20; "token\_type": "bearer",
-
-&#x20; "scope": "repo,user,notifications,read:org",
-
-&#x20; "user": {
-
-&#x20;   "login": "MuhammadReki",
-
-&#x20;   "id": 12345678,
-
-&#x20;   "avatar\_url": "https://avatars.githubusercontent.com/u/...",
-
-&#x20;   "name": "Muhammad Reki"
-
-&#x20; }
-
-}
-
-```
-
-
-
-\*\*Cara Kerja:\*\*
-
-1\. Terima `code` dari mobile app
-
-2\. Kirim `code` + `client\_id` + `client\_secret` ke `https://github.com/login/oauth/access\_token`
-
-3\. Dapatkan `access\_token`
-
-4\. Fetch user info dari `https://api.github.com/user`
-
-5\. Return token + user ke mobile app
-
-
-
-\---
-
-
-
-\### 2. Google OAuth — Callback
-
-
-
-\*\*Endpoint:\*\* `GET /api/auth/google/callback?code=xxx`
-
-
-
-\*\*Response:\*\* Redirect 307 ke `gitflow://auth/google?access\_token=...\&email=...\&name=...\&picture=...\&id=...`
-
-
-
-\*\*Cara Kerja:\*\*
-
-1\. Terima `code` dari Google OAuth redirect
-
-2\. Kirim `code` + `client\_id` + `client\_secret` ke `https://oauth2.googleapis.com/token`
-
-3\. Dapatkan `access\_token`
-
-4\. Fetch user info dari `https://www.googleapis.com/oauth2/v2/userinfo`
-
-5\. Redirect ke deep link `gitflow://auth/google?...` dengan data user
-
-
-
-\---
-
-
-
-\## 🚀 Cara Deploy
-
-
-
-\### Prasyarat
-
-
-
-\- Akun \[Vercel](https://vercel.com) (gratis)
-
-\- Akun \[GitHub](https://github.com)
-
-\- Akun \[Google Cloud Console](https://console.cloud.google.com)
-
-\- Node.js 18+ (untuk testing lokal)
-
-
-
-\### Setup GitHub OAuth App
-
-
-
-1\. Buka https://github.com/settings/developers
-
-2\. Klik \*\*New OAuth App\*\*
-
-3\. Isi:
-
-&#x20;  - \*\*Application name:\*\* GitFlow
-
-&#x20;  - \*\*Homepage URL:\*\* `https://github.com/MuhammadReki/GitFlow`
-
-&#x20;  - \*\*Authorization callback URL:\*\* `gitflow://auth/callback`
-
-4\. Copy \*\*Client ID\*\* + \*\*Client Secret\*\*
-
-
-
-\### Setup Google OAuth
-
-
-
-1\. Buka https://console.cloud.google.com/apis/credentials
-
-2\. Buat \*\*OAuth 2.0 Client ID\*\* → \*\*Web application\*\*
-
-3\. Authorized JavaScript origins: `https://gitflow-backend-xi.vercel.app`
-
-4\. Authorized redirect URIs: `https://gitflow-backend-xi.vercel.app/api/auth/google/callback`
-
-5\. Copy \*\*Client ID\*\* + \*\*Client Secret\*\*
-
-
-
-\### Deploy ke Vercel
-
-
+Clone repository:
 
 ```bash
-
-\# Clone repo
-
 git clone https://github.com/MuhammadReki/gitflow-backend.git
+```
 
+Masuk ke direktori proyek:
+
+```bash
 cd gitflow-backend
+```
 
+Jalankan deployment:
 
-
-\# Install Vercel CLI (opsional)
-
-npm i -g vercel
-
-
-
-\# Deploy
-
+```bash
 vercel
-
 ```
 
+Ikuti instruksi CLI untuk menghubungkan proyek dengan akun Vercel. Tambahkan environment variables yang diperlukan sebelum melakukan deployment produksi.
 
+### Opsi 2: Menggunakan Vercel Dashboard
 
-Atau deploy via GitHub:
+1. Buka [Vercel Dashboard](https://vercel.com/new).
+2. Import repository `gitflow-backend` dari GitHub.
+3. Konfigurasikan environment variables OAuth.
+4. Pastikan konfigurasi deployment sudah sesuai.
+5. Klik **Deploy**.
 
-1\. Buka https://vercel.com/new
+URL backend:
 
-2\. Import repo `gitflow-backend`
+**https://gitflow-backend-xi.vercel.app**
 
-3\. Tambah environment variables (lihat di bawah)
+---
 
-4\. Klik \*\*Deploy\*\*
+## 🧪 Pengujian Endpoint
 
-
-
-\---
-
-
-
-\## 🔐 Environment Variables
-
-
-
-Set di \*\*Vercel Dashboard → Project → Settings → Environment Variables\*\*:
-
-
-
-| Variable | Value | Keterangan |
-
-|----------|-------|------------|
-
-| `GITHUB\_CLIENT\_ID` | `Ov23li...` | Dari GitHub OAuth App |
-
-| `GITHUB\_CLIENT\_SECRET` | `xxx...` | Dari GitHub OAuth App |
-
-| `GOOGLE\_CLIENT\_ID` | `624229663803-...` | Dari Google Cloud Console |
-
-| `GOOGLE\_CLIENT\_SECRET` | `GOCSPX-...` | Dari Google Cloud Console |
-
-
-
-> ⚠️ \*\*JANGAN\*\* commit file `.env` ke repo. Semua secret disimpan di Vercel env vars.
-
-
-
-\---
-
-
-
-\## 📱 Integrasi dengan GitFlow Mobile
-
-
-
-Backend ini dipakai oleh aplikasi mobile \*\*GitFlow\*\* → \[repo GitFlow](https://github.com/MuhammadReki/GitFlow).
-
-
-
-Di aplikasi mobile, URL backend di-set di:
-
-```dart
-
-// lib/data/services/github\_oauth\_service.dart
-
-static const String backendUrl =
-
-&#x20;   'https://gitflow-backend-xi.vercel.app/api/auth/github';
-
-```
-
-
-
-\---
-
-
-
-\## 🧪 Testing
-
-
-
-\### Test backend hidup
-
-
+Untuk menguji respons error pada callback Google OAuth, jalankan:
 
 ```bash
-
-curl -I "https://gitflow-backend-xi.vercel.app/api/auth/google/callback?error=test"
-
+curl -i "https://gitflow-backend-xi.vercel.app/api/auth/google/callback?error=test"
 ```
 
+Jika implementasi callback mengembalikan redirect untuk parameter error tersebut, respons yang diharapkan adalah redirect menuju deep link aplikasi:
 
-
-\*\*Expected:\*\* `HTTP/1.1 307` + `Location: gitflow://auth/google?error=test`
-
-
-
-\### Test GitHub OAuth (butuh code valid)
-
-
-
-```bash
-
-curl -X POST "https://gitflow-backend-xi.vercel.app/api/auth/github" \\
-
-&#x20; -H "Content-Type: application/json" \\
-
-&#x20; -d '{"code": "your\_github\_code"}'
-
+```text
+HTTP/1.1 307 Temporary Redirect
+Location: gitflow://auth/google?error=test
 ```
 
+**Catatan:** Hasil tersebut merupakan respons yang diharapkan berdasarkan implementasi callback, bukan jaminan bahwa endpoint produksi saat ini sudah memberikan respons tersebut. Gunakan `curl -i` untuk memeriksa status dan header aktual.
 
+---
 
-\---
+## 🔗 Related Links
 
+- 📱 [GitFlow Mobile Repository](https://github.com/MuhammadReki/GitFlow)
+- 💻 [GitFlow Backend Repository](https://github.com/MuhammadReki/gitflow-backend)
+- ☁️ [Vercel Deployment](https://gitflow-backend-xi.vercel.app)
+- 🔐 [GitHub OAuth Documentation](https://docs.github.com/en/apps/oauth-apps)
+- 🔑 [Google OAuth Documentation](https://developers.google.com/identity/protocols/oauth2)
 
+---
 
-\## 🐛 Bug Report \& Feature Request
+<div align="center">
 
+**Made with ❤️ in Indonesia**
 
+Developed by [Muhammad Reki](https://github.com/MuhammadReki)
 
-Buka \*\*issue\*\* di \[GitHub Issues](https://github.com/MuhammadReki/gitflow-backend/issues).
+Licensed under the MIT License.
 
-
-
-\---
-
-
-
-\## 📄 License
-
-
-
-Project ini dilisensikan under \[MIT License](LICENSE).
-
-
-
-\---
-
-
-
-\## 👤 Author
-
-
-
-\*\*Muhammad Reki\*\*
-
-\- GitHub: \[@MuhammadReki](https://github.com/MuhammadReki)
-
-\- Email: mreki2022@gmail.com
-
-
-
-\---
-
-
-
-<p align="center">
-
-&#x20; Made with ❤️ in Indonesia
-
-</p>
-
+</div>
